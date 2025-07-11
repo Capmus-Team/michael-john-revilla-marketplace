@@ -15,6 +15,9 @@ export function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
+            <Link href="/" className="text-gray-600 hover:text-gray-900">
+              Categories
+            </Link>
             <Link href="/search" className="text-gray-600 hover:text-gray-900">
               Browse
             </Link>

@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { supabase } from "@/lib/supabase"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
 
 interface MessageFormProps {
-  listingId: string
-  sellerEmail: string
+  listingId: string;
+  sellerEmail: string;
 }
 
 export function MessageForm({ listingId, sellerEmail }: MessageFormProps) {
-  const [message, setMessage] = useState("I want to buy your item!")
-  const [buyerEmail, setBuyerEmail] = useState("")
-  const [buyerName, setBuyerName] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
+  const [message, setMessage] = useState("I want to buy your item!");
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [buyerName, setBuyerName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
       // Save message to database
@@ -33,9 +33,10 @@ export function MessageForm({ listingId, sellerEmail }: MessageFormProps) {
         buyer_email: buyerEmail,
         buyer_name: buyerName,
         message: message,
-      })
+        seller_email: sellerEmail,
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
       // Send email notification (you would implement this with your email service)
       await fetch("/api/send-message", {
@@ -48,31 +49,35 @@ export function MessageForm({ listingId, sellerEmail }: MessageFormProps) {
           message,
           listingId,
         }),
-      })
+      });
 
-      setSuccess(true)
-      setMessage("")
-      setBuyerEmail("")
-      setBuyerName("")
+      setSuccess(true);
+      setMessage("");
+      setBuyerEmail("");
+      setBuyerName("");
     } catch (error) {
-      console.error("Error sending message:", error)
-      alert("Failed to send message. Please try again.")
+      console.error("Error sending message:", error);
+      alert("Failed to send message. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (success) {
     return (
       <Card>
         <CardContent className="p-6">
           <div className="text-center">
-            <div className="text-green-600 text-lg font-semibold mb-2">Message Sent Successfully!</div>
-            <p className="text-gray-600">The seller will receive your message and can contact you directly.</p>
+            <div className="text-green-600 text-lg font-semibold mb-2">
+              Message Sent Successfully!
+            </div>
+            <p className="text-gray-600">
+              The seller will receive your message and can contact you directly.
+            </p>
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -84,7 +89,12 @@ export function MessageForm({ listingId, sellerEmail }: MessageFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="buyerName">Your Name</Label>
-            <Input id="buyerName" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} required />
+            <Input
+              id="buyerName"
+              value={buyerName}
+              onChange={(e) => setBuyerName(e.target.value)}
+              required
+            />
           </div>
 
           <div>
@@ -116,5 +126,5 @@ export function MessageForm({ listingId, sellerEmail }: MessageFormProps) {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

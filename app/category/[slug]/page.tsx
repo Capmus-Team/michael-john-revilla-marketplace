@@ -1,56 +1,70 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { ListingCard } from "@/components/listing-card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
-import type { Listing } from "@/lib/types"
-import { CATEGORIES } from "@/lib/types"
-import { supabase } from "@/lib/supabase"
-import { SAMPLE_LISTINGS } from "@/lib/sample-data"
-import { notFound } from "next/navigation"
+import { useState, useEffect } from "react";
+import { Header } from "@/components/header";
+import { ListingCard } from "@/components/listing-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import type { Listing } from "@/lib/types";
+import { CATEGORIES } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+import { SAMPLE_LISTINGS } from "@/lib/sample-data";
+import { notFound } from "next/navigation";
 
 interface CategoryPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
-  const [listings, setListings] = useState<Listing[]>([])
-  const [filteredListings, setFilteredListings] = useState<Listing[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState("newest")
-  const [loading, setLoading] = useState(true)
-  const [categorySlug, setCategorySlug] = useState("")
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [loading, setLoading] = useState(true);
+  const [categorySlug, setCategorySlug] = useState("");
 
   useEffect(() => {
     const getParams = async () => {
-      const resolvedParams = await params
-      setCategorySlug(resolvedParams.slug)
-    }
-    getParams()
-  }, [params])
+      const resolvedParams = await params;
+      setCategorySlug(resolvedParams.slug);
+    };
+    getParams();
+  }, [params]);
 
   useEffect(() => {
     if (categorySlug) {
-      fetchCategoryListings()
+      fetchCategoryListings();
     }
-  }, [categorySlug])
+  }, [categorySlug]);
 
   useEffect(() => {
-    filterAndSortListings()
-  }, [listings, searchQuery, sortBy])
+    filterAndSortListings();
+  }, [listings, searchQuery, sortBy]);
 
   const categoryName = categorySlug
-    ? CATEGORIES.find((cat) => cat.toLowerCase().replace(/\s+/g, "-") === categorySlug) ||
-      categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1).replace(/-/g, " ")
-    : ""
+    ? CATEGORIES.find(
+        (cat) => cat.toLowerCase().replace(/\s+/g, "-") === categorySlug
+      ) ||
+      categorySlug.charAt(0).toUpperCase() +
+        categorySlug.slice(1).replace(/-/g, " ")
+    : "";
 
   // Check if category exists
-  if (categorySlug && !CATEGORIES.some((cat) => cat.toLowerCase().replace(/\s+/g, "-") === categorySlug)) {
-    notFound()
+  if (
+    categorySlug &&
+    !CATEGORIES.some(
+      (cat) => cat.toLowerCase().replace(/\s+/g, "-") === categorySlug
+    )
+  ) {
+    notFound();
   }
 
   const fetchCategoryListings = async () => {
@@ -59,59 +73,67 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         .from("listings")
         .select("*")
         .eq("category", categoryName)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: false });
 
       if (error) {
         const categoryListings = SAMPLE_LISTINGS.filter(
-          (listing) => listing.category.toLowerCase().replace(/\s+/g, "-") === categorySlug,
-        )
-        setListings(categoryListings)
-        return
+          (listing) =>
+            listing.category.toLowerCase().replace(/\s+/g, "-") === categorySlug
+        );
+        setListings(categoryListings);
+        return;
       }
 
-      setListings(data || [])
+      setListings(data || []);
     } catch (error) {
-      console.error("Error fetching category listings:", error)
+      console.error("Error fetching category listings:", error);
       const categoryListings = SAMPLE_LISTINGS.filter(
-        (listing) => listing.category.toLowerCase().replace(/\s+/g, "-") === categorySlug,
-      )
-      setListings(categoryListings)
+        (listing) =>
+          listing.category.toLowerCase().replace(/\s+/g, "-") === categorySlug
+      );
+      setListings(categoryListings);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filterAndSortListings = () => {
-    let filtered = [...listings]
+    let filtered = [...listings];
 
     // Text search within category
     if (searchQuery) {
       filtered = filtered.filter(
         (listing) =>
           listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          listing.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
+          listing.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
 
     // Sort
     switch (sortBy) {
       case "price-low":
-        filtered.sort((a, b) => a.price - b.price)
-        break
+        filtered.sort((a, b) => a.price - b.price);
+        break;
       case "price-high":
-        filtered.sort((a, b) => b.price - a.price)
-        break
+        filtered.sort((a, b) => b.price - a.price);
+        break;
       case "oldest":
-        filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-        break
+        filtered.sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        break;
       case "newest":
       default:
-        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        break
+        filtered.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        break;
     }
 
-    setFilteredListings(filtered)
-  }
+    setFilteredListings(filtered);
+  };
 
   if (loading) {
     return (
@@ -123,7 +145,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -166,7 +188,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           {/* Results */}
           <div className="flex items-center justify-between mb-6">
             <p className="text-gray-600">
-              {filteredListings.length} {filteredListings.length === 1 ? "item" : "items"} in {categoryName}
+              {filteredListings.length}{" "}
+              {filteredListings.length === 1 ? "item" : "items"} in{" "}
+              {categoryName}
             </p>
           </div>
 
@@ -192,5 +216,5 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,29 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Edit, Trash2 } from "lucide-react"
-import Link from "next/link"
-import type { Listing } from "@/lib/types"
-import { supabase } from "@/lib/supabase"
-import { SAMPLE_LISTINGS } from "@/lib/sample-data"
+import { useState, useEffect } from "react";
+import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Search, Plus, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
+import type { Listing } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+import { SAMPLE_LISTINGS } from "@/lib/sample-data";
 
 export default function MyListingsPage() {
-  const [listings, setListings] = useState<Listing[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [userEmail, setUserEmail] = useState("")
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     // In a real app, you'd get this from authentication
-    const email = localStorage.getItem("userEmail") || "seller1@example.com"
-    setUserEmail(email)
-    fetchUserListings(email)
-  }, [])
+    const email =
+      localStorage.getItem("userEmail") || "michaeljohnrevilla1233@gmail.com";
+    setUserEmail(email);
+    fetchUserListings(email);
+  }, []);
 
   const fetchUserListings = async (email: string) => {
     try {
@@ -31,46 +32,53 @@ export default function MyListingsPage() {
         .from("listings")
         .select("*")
         .eq("seller_email", email)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: false });
 
       if (error) {
         // Fallback to sample data filtered by user
-        const userListings = SAMPLE_LISTINGS.filter((listing) => listing.seller_email === email)
-        setListings(userListings)
-        return
+        const userListings = SAMPLE_LISTINGS.filter(
+          (listing) => listing.seller_email === email
+        );
+        setListings(userListings);
+        return;
       }
 
-      setListings(data || [])
+      setListings(data || []);
     } catch (error) {
-      console.error("Error fetching user listings:", error)
+      console.error("Error fetching user listings:", error);
       // Fallback to sample data
-      const userListings = SAMPLE_LISTINGS.filter((listing) => listing.seller_email === userEmail)
-      setListings(userListings)
+      const userListings = SAMPLE_LISTINGS.filter(
+        (listing) => listing.seller_email === userEmail
+      );
+      setListings(userListings);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteListing = async (listingId: string) => {
-    if (!confirm("Are you sure you want to delete this listing?")) return
+    if (!confirm("Are you sure you want to delete this listing?")) return;
 
     try {
-      const { error } = await supabase.from("listings").delete().eq("id", listingId)
+      const { error } = await supabase
+        .from("listings")
+        .delete()
+        .eq("id", listingId);
 
-      if (error) throw error
+      if (error) throw error;
 
-      setListings(listings.filter((listing) => listing.id !== listingId))
+      setListings(listings.filter((listing) => listing.id !== listingId));
     } catch (error) {
-      console.error("Error deleting listing:", error)
-      alert("Failed to delete listing. Please try again.")
+      console.error("Error deleting listing:", error);
+      alert("Failed to delete listing. Please try again.");
     }
-  }
+  };
 
   const filteredListings = listings.filter(
     (listing) =>
       listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      listing.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      listing.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -82,7 +90,7 @@ export default function MyListingsPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -115,7 +123,9 @@ export default function MyListingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Listings
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{listings.length}</div>
@@ -123,19 +133,28 @@ export default function MyListingsPage() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Active Listings</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Active Listings
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{listings.length}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {listings.length}
+                </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Value
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ${listings.reduce((sum, listing) => sum + listing.price, 0).toLocaleString()}
+                  $
+                  {listings
+                    .reduce((sum, listing) => sum + listing.price, 0)
+                    .toLocaleString()}
                 </div>
               </CardContent>
             </Card>
@@ -147,7 +166,9 @@ export default function MyListingsPage() {
             <CardContent>
               <h3 className="text-lg font-semibold mb-2">No listings found</h3>
               <p className="text-gray-600 mb-4">
-                {searchQuery ? "Try adjusting your search terms." : "You haven't created any listings yet."}
+                {searchQuery
+                  ? "Try adjusting your search terms."
+                  : "You haven't created any listings yet."}
               </p>
               {!searchQuery && (
                 <Button asChild>
@@ -166,7 +187,10 @@ export default function MyListingsPage() {
                 <div className="flex gap-6">
                   <div className="w-32 h-32 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
                     <img
-                      src={listing.image_url || "/placeholder.svg?height=128&width=128"}
+                      src={
+                        listing.image_url ||
+                        "/placeholder.svg?height=128&width=128"
+                      }
                       alt={listing.title}
                       className="w-full h-full object-cover"
                     />
@@ -174,15 +198,24 @@ export default function MyListingsPage() {
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-xl font-semibold mb-2">{listing.title}</h3>
-                        <p className="text-2xl font-bold text-green-600 mb-2">${listing.price.toLocaleString()}</p>
+                        <h3 className="text-xl font-semibold mb-2">
+                          {listing.title}
+                        </h3>
+                        <p className="text-2xl font-bold text-green-600 mb-2">
+                          ${listing.price.toLocaleString()}
+                        </p>
                         <Badge variant="secondary" className="mb-2">
                           {listing.category}
                         </Badge>
                         <p className="text-gray-600 text-sm mb-2">
-                          Listed {new Date(listing.created_at).toLocaleDateString()}
+                          Listed{" "}
+                          {new Date(listing.created_at).toLocaleDateString()}
                         </p>
-                        {listing.description && <p className="text-gray-700 line-clamp-2">{listing.description}</p>}
+                        {listing.description && (
+                          <p className="text-gray-700 line-clamp-2">
+                            {listing.description}
+                          </p>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" asChild>
@@ -208,5 +241,5 @@ export default function MyListingsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

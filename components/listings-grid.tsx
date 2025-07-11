@@ -1,20 +1,25 @@
-import type { Listing } from "@/lib/types"
-import { ListingCard } from "./listing-card"
+import type { Listing } from "@/lib/types";
+import { ListingCard } from "./listing-card";
 
 interface ListingsGridProps {
-  listings: Listing[]
-  selectedCategory: string | null
+  listings: Listing[];
+  selectedCategory: string | null;
 }
 
-export function ListingsGrid({ listings, selectedCategory }: ListingsGridProps) {
+export function ListingsGrid({
+  listings,
+  selectedCategory,
+}: ListingsGridProps) {
   const filteredListings = selectedCategory
     ? listings.filter((listing) => listing.category === selectedCategory)
-    : listings
+    : listings;
 
   return (
     <div className="flex-1">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold">{selectedCategory || "All Categories"}</h2>
+        <h2 className="text-2xl font-bold">
+          {selectedCategory || "All Categories"}
+        </h2>
         <p className="text-gray-600">{filteredListings.length} items</p>
       </div>
 
@@ -30,5 +35,5 @@ export function ListingsGrid({ listings, selectedCategory }: ListingsGridProps) 
         </div>
       )}
     </div>
-  )
+  );
 }

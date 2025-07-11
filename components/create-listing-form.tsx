@@ -1,20 +1,26 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-import { CATEGORIES } from "@/lib/types"
-import { supabase } from "@/lib/supabase"
-import Image from "next/image"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { CATEGORIES } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+import Image from "next/image";
 
 interface CreateListingFormProps {
-  onSuccess: () => void
+  onSuccess: () => void;
 }
 
 export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
@@ -23,49 +29,53 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
     description: "",
     price: "",
     category: "",
-    sellerEmail: "",
+    sellerEmail: "michaeljohnrevilla1233@gmail.com",
     sellerName: "",
     imageUrl: "",
-  })
-  const [loading, setLoading] = useState(false)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string>("")
+  });
+  const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file)
-      const reader = new FileReader()
+      setImageFile(file);
+      const reader = new FileReader();
       reader.onload = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split(".").pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `listings/${fileName}`
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `listings/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage.from("images").upload(filePath, file)
+    const { error: uploadError } = await supabase.storage
+      .from("listing-images")
+      .upload(filePath, file);
 
-    if (uploadError) throw uploadError
+    if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage.from("images").getPublicUrl(filePath)
+    const { data } = supabase.storage
+      .from("listing-images")
+      .getPublicUrl(filePath);
 
-    return data.publicUrl
-  }
+    return data.publicUrl;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      let imageUrl = formData.imageUrl
+      let imageUrl = formData.imageUrl;
 
       if (imageFile) {
-        imageUrl = await uploadImage(imageFile)
+        imageUrl = await uploadImage(imageFile);
       }
 
       const { error } = await supabase.from("listings").insert({
@@ -76,18 +86,18 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
         seller_email: formData.sellerEmail,
         seller_name: formData.sellerName,
         image_url: imageUrl || "/placeholder.svg?height=300&width=300",
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
-      onSuccess()
+      onSuccess();
     } catch (error) {
-      console.error("Error creating listing:", error)
-      alert("Failed to create listing. Please try again.")
+      console.error("Error creating listing:", error);
+      alert("Failed to create listing. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -133,7 +143,9 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -145,14 +157,20 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
                   type="number"
                   step="0.01"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
                   required
                 />
               </div>
 
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Select onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                <Select
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, category: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -171,7 +189,9 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
                 <Input
                   id="sellerName"
                   value={formData.sellerName}
-                  onChange={(e) => setFormData({ ...formData, sellerName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, sellerName: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -182,7 +202,10 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
                   id="sellerEmail"
                   type="email"
                   value={formData.sellerEmail}
-                  onChange={(e) => setFormData({ ...formData, sellerEmail: e.target.value })}
+                  onChange={
+                    (e) => null
+                    //setFormData({ ...formData, sellerEmail: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -192,7 +215,9 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={4}
                 />
               </div>
@@ -209,7 +234,12 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
                 <h3 className="font-bold text-lg mb-4">Preview</h3>
                 <div className="aspect-square bg-blue-100 rounded-lg mb-4 relative overflow-hidden">
                   {imagePreview ? (
-                    <Image src={imagePreview || "/placeholder.svg"} alt="Preview" fill className="object-cover" />
+                    <Image
+                      src={imagePreview || "/placeholder.svg"}
+                      alt="Preview"
+                      fill
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 opacity-50"></div>
                   )}
@@ -221,8 +251,12 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
           <div className="lg:col-span-1">
             <div className="space-y-4">
               <div>
-                <h3 className="font-bold text-xl">{formData.title || "Title"}</h3>
-                <p className="font-bold text-lg">{formData.price ? `$${formData.price}` : "Price"}</p>
+                <h3 className="font-bold text-xl">
+                  {formData.title || "Title"}
+                </h3>
+                <p className="font-bold text-lg">
+                  {formData.price ? `$${formData.price}` : "Price"}
+                </p>
               </div>
 
               <p className="text-sm text-gray-600">
@@ -240,5 +274,5 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
