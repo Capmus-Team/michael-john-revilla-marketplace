@@ -2,7 +2,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, User, Bell, Mail, Search, List } from "lucide-react";
 
+import { useAuth } from "./contexts/auth-context";
+
 export function Header() {
+  const { user, isLoading, signIn, signOut } = useAuth();
+
   return (
     <header className="border-b bg-white">
       <div className="container mx-auto px-4 py-4">
@@ -14,22 +18,27 @@ export function Header() {
             <h1 className="text-xl font-bold">Marketplace</h1>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-gray-600 hover:text-gray-900">
-              Categories
-            </Link>
+          <nav className="hidden md:flex items-start gap-6">
+            {user && (
+              <Link href="/" className="text-gray-600 hover:text-gray-900">
+                Categories
+              </Link>
+            )}
+
             <Link href="/search" className="text-gray-600 hover:text-gray-900">
-              Browse
+              Browse Products
             </Link>
             {/* <Link href="/category/electronicsxxx" className="text-gray-600 hover:text-gray-900">
               Electronics
             </Link> */}
-            <Link
-              href="/my-listings"
-              className="text-gray-600 hover:text-gray-900"
-            >
-              My Listings
-            </Link>
+            {user && (
+              <Link
+                href="/my-listings"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                My Listings
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">
@@ -52,12 +61,21 @@ export function Header() {
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />
             </Button>
-            <Button asChild>
-              <Link href="/create">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Listing
-              </Link>
-            </Button>
+            {user ? (
+              <Button asChild>
+                <Link href="/create">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Listing
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/sign-in">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Sign In
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
