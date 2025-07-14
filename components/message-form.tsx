@@ -51,7 +51,7 @@ export function MessageForm({ listingId, sellerEmail }: MessageFormProps) {
           buyerEmail,
           buyerName,
           message,
-          listingId,
+          listingId, //
         }),
       });
 
