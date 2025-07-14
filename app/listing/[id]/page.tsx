@@ -20,6 +20,8 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const [isBuying, setIsBuying] = useState(false);
+
   //const [userSeller, setUserSeller] = useState({});
 
   const [sellerStripeAccount, setSellerStripeAccount] = useState<any>({});
@@ -51,7 +53,7 @@ export default function ListingPage({ params }: { params: { id: string } }) {
           .eq("user_id", data?.user_id)
           .single();
 
-        //console.log("data:", data, sellerStripe);
+        ////console.log("data:", data, sellerStripe);
         setSellerStripeAccount(sellerStripe);
       } catch (error) {
         const sampleListing = SAMPLE_LISTINGS.find((l) => l.id === params.id);
@@ -66,47 +68,59 @@ export default function ListingPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (sellerStripeAccount) {
-      console.log("sellerStripeAccount fetched:", sellerStripeAccount);
+      //console.log("sellerStripeAccount fetched:", sellerStripeAccount);
     }
   }, [sellerStripeAccount]);
 
   const handleBuyClick = async () => {
     // alert("Buy button clicked!");
-    // console.log("Listing:", listing);
+    // //console.log("Listing:", listing);
     // return;
-    const response = await fetch("/api/stripe/pay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        listingId: listing?.id,
-        amount: listing?.price,
-        sellerId: listing?.user_id,
-        products: [listing], // should be []
-        seller_stripe_acc_id: sellerStripeAccount?.stripe_account_id,
-        // buyer_stripe_acc_id
-        success_url: `${window.location.origin}/?session_id={CHECKOUT_SESSION_ID}&checkout=success`,
-        cancel_url: `${window.location.origin}/?checkout=false`,
-      }),
-    });
 
-    // const datax = await response.json();
-    // console.log("response:", datax);
-    // return;
-    const stripe = await loadStripe(
-      process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
-    );
+    if (!user) {
+      return;
+    }
 
-    const data = await response.json();
-    // console.log("RESPONSE!!:", stripe?.accou);
+    setIsBuying(true);
+    try {
+      const response = await fetch("/api/stripe/pay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          listingId: listing?.id,
+          amount: listing?.price,
+          sellerId: listing?.user_id,
+          products: [listing], // should be []
+          seller_stripe_acc_id: sellerStripeAccount?.stripe_account_id,
+          // buyer_stripe_acc_id
+          success_url: `${window.location.origin}/?session_id={CHECKOUT_SESSION_ID}&checkout=success`,
+          cancel_url: `${window.location.origin}/?checkout=false`,
+        }),
+      });
 
-    const result: any = await stripe?.redirectToCheckout({
-      sessionId: data.session,
-    });
+      // const datax = await response.json();
+      // //console.log("response:", datax);
+      // return;
+      const stripe = await loadStripe(
+        process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
+      );
 
-    if (result.error) {
-      window.alert(result?.error?.message);
+      const data = await response.json();
+      // //console.log("RESPONSE!!:", stripe?.accou);
+
+      const result: any = await stripe?.redirectToCheckout({
+        sessionId: data.session,
+      });
+
+      if (result.error) {
+        window.alert(result?.error?.message);
+      }
+    } catch (error) {
+      console.error("Error during purchase:", error);
+    } finally {
+      setIsBuying(false);
     }
   };
 
@@ -121,7 +135,7 @@ export default function ListingPage({ params }: { params: { id: string } }) {
 
   // useEffect(() => {
   //   if (userSeller) {
-  //     console.log("User Seller:", userSeller.json());
+  //     //console.log("User Seller:", userSeller.json());
   //   }
   // }, [userSeller]);
 
@@ -190,8 +204,11 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                       onClick={handleBuyClick}
                       type="button"
                       className="w-full"
+                      disabled={isBuying}
                     >
-                      Buy ${listing.price.toLocaleString()}
+                      {isBuying
+                        ? "Buying..."
+                        : `Buy $${listing.price.toLocaleString()}`}{" "}
                     </Button>
                   </div>
                 )}
@@ -202,11 +219,12 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                     Seller has no stripe account active yet
                   </div>
                 )}
-
-              <MessageForm
-                listingId={listing.id}
-                sellerEmail={listing.seller_email}
-              />
+              {sellerStripeAccount?.user_id !== user?.id && (
+                <MessageForm
+                  listingId={listing.id}
+                  sellerEmail={listing.seller_email}
+                />
+              )}
             </div>
           </div>
         </div>

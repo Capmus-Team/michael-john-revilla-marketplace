@@ -13,7 +13,7 @@ const RouteController = ({ children }) => {
   useEffect(() => {
     if (session === undefined) return; // Still loading auth state
 
-    const protectedRoutes = ["/create", "/my-listings", "/profile", "/listing"];
+    const protectedRoutes = ["/create", "/my-listings", "/profile"];
 
     const guestRoutes = ["/login", "/sign-up", "/sign-in"];
 

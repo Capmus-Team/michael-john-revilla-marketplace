@@ -19,18 +19,21 @@ import { CATEGORIES } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import PrivateRoute from "./RouteController";
+import { UserAuth } from "./contexts/auth-context";
 
 interface CreateListingFormProps {
   onSuccess: () => void;
 }
 
 export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
+  const { user } = UserAuth(); // Assuming you have a UserAuth context to get the current user
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     price: "",
     category: "",
-    sellerEmail: "michaeljohnrevilla1233@gmail.com",
+    sellerEmail: user?.email,
     sellerName: "",
     imageUrl: "",
   });
@@ -84,9 +87,10 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
         description: formData.description,
         price: Number.parseFloat(formData.price),
         category: formData.category,
-        seller_email: formData.sellerEmail,
+        // seller_email: user?.email,
         seller_name: formData.sellerName,
         image_url: imageUrl || "/placeholder.svg?height=300&width=300",
+        user_id: user?.id,
       });
 
       if (error) throw error;
@@ -198,7 +202,7 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
                   />
                 </div>
 
-                <div>
+                {/* <div>
                   <Label htmlFor="sellerEmail">Email</Label>
                   <Input
                     id="sellerEmail"
@@ -210,7 +214,7 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
                     }
                     required
                   />
-                </div>
+                </div> */}
 
                 <div>
                   <Label htmlFor="description">Description</Label>

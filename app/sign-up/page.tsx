@@ -62,7 +62,7 @@ export default function SignUp({ onToggleMode }: SignUpProps) {
     try {
       const result = await signUpNewUser(email, password); // Call context function
       if (result.success) {
-        console.log("Sign up successful:", result);
+        //console.log("Sign up successful:", result);
         navigate.push("/"); // Navigate to dashboard on success
       } else {
         setError(result.error.message); // Show error message on failure

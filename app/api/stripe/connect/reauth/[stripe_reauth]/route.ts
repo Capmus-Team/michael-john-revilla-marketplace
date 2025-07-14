@@ -6,7 +6,7 @@ export async function GET(
 ) {
   try {
     const { stripe_reauth } = params;
-    console.log("Stripe reauth:", stripe_reauth);
+    //console.log("Stripe reauth:", stripe_reauth);
 
     if (stripe_reauth === "true") {
       return NextResponse.redirect(new URL("/profile", request.url));

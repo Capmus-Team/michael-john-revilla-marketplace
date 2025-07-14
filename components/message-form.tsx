@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
+import { UserAuth } from "./contexts/auth-context";
 
 interface MessageFormProps {
   listingId: string;
@@ -21,9 +22,12 @@ export function MessageForm({ listingId, sellerEmail }: MessageFormProps) {
   const [buyerName, setBuyerName] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-
+  const { user } = UserAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      return;
+    }
     setLoading(true);
 
     try {

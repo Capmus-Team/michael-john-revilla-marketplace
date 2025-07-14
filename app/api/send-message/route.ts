@@ -9,9 +9,9 @@ export async function POST(request: NextRequest) {
 
     // Here you would integrate with your email service (SendGrid, Resend, etc.)
     // For now, we'll just log the email that would be sent
-    console.log("Email would be sent to:", sellerEmail);
-    console.log("From:", buyerEmail);
-    console.log("Message:", message);
+    //console.log("Email would be sent to:", sellerEmail);
+    //console.log("From:", buyerEmail);
+    //console.log("Message:", message);
 
     // Example with a hypothetical email service:
 

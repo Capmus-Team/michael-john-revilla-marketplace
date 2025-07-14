@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { stripe } from "./stripeClient";
 import { NextRequest } from "next/server";
+import Stripe from "stripe";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -183,4 +184,37 @@ export async function getUser(userID: string) {
     console.error("Error getting user:", error);
     throw error;
   }
+}
+
+export async function StoreCheckoutSession(
+  data: Stripe.Response<Stripe.Checkout.Session>,
+  chargedata: Stripe.Response<Stripe.Charge>
+) {
+  // const { data: toInsert, error: errInsert } = await supabase
+  // .from()
+
+  const { data: toInsert, error: errInsert } = await supabase
+    .from("payments")
+    .insert([
+      {
+        stripe_session_id: data?.id,
+        amount: data?.amount_total,
+        currency: data?.currency,
+        customer_id: data?.customer,
+        status: data?.payment_status,
+        metadata: data ?? {},
+        stripe_charge_id: chargedata?.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ])
+    .select()
+    .single();
+
+  if (errInsert) {
+    console.error("Error storing payment:", errInsert);
+    throw errInsert;
+  }
+
+  return data;
 }

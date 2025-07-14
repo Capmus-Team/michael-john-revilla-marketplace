@@ -13,6 +13,6 @@ export const stripe = new Stripe(stripeSecretKey, {
   apiVersion: stripeApiVersion as any,
 });
 
-// console.log({ stripeSecretKey, stripeApiVersion });
+// //console.log({ stripeSecretKey, stripeApiVersion });
 // app/actions/stripe-login.ts
 // "use server";

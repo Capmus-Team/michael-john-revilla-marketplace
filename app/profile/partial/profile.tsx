@@ -36,10 +36,10 @@ export default function ProfilePage() {
     if (searchQuery == "true" && user) {
       const updateStripe = async () => {
         const { stripe_account_id }: any = await getStripeAccount(user.id); // check from database
-        // console.log("id:", stripe_account_id);
+        // //console.log("id:", stripe_account_id);
         const account = await stripe.accounts.retrieve(stripe_account_id);
 
-        //console.log("Stripe Account!!!:", account);
+        ////console.log("Stripe Account!!!:", account);
 
         await updateStripeAccount({
           user_id: user.id,
@@ -61,7 +61,7 @@ export default function ProfilePage() {
   const [stripe_account, setStripeAccount] = useState<StripeAccount>();
 
   useEffect(() => {
-    // console.log("User:", user);
+    // //console.log("User:", user);
     const fetchStripeAccount = async () => {
       setStripeAccount((await getStripeAccount(user.id || "")) as any);
     };
@@ -69,7 +69,7 @@ export default function ProfilePage() {
   }, [user]);
 
   useEffect(() => {
-    console.log("Stripe Account:", stripe_account);
+    //console.log("Stripe Account:", stripe_account);
   }, [stripe_account]);
 
   const [formData, setFormData] = useState({});
@@ -80,7 +80,7 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsConnecting(true);
-    // console.log("token:", session?.access_token || session?.refresh_token);
+    // //console.log("token:", session?.access_token || session?.refresh_token);
     try {
       const response = await fetch("/api/stripe/connect", {
         method: "POST",
@@ -95,7 +95,7 @@ export default function ProfilePage() {
         throw new Error("Failed to connect to Stripe");
       }
       const { url, user, account } = await response.json();
-      // console.log({ url: url, user: user, account: account });
+      // //console.log({ url: url, user: user, account: account });
       window.location.href = url; // Redirect to Stripe Connect
 
       //alert("Connected to Stripe successfully!");

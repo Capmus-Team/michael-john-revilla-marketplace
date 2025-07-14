@@ -22,6 +22,28 @@ export default function HomePage() {
 
   const { user } = UserAuth();
 
+  const fetchListings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("listings")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        // If there's an error (like table doesn't exist), use sample data
+        //console.log("Using sample data:", error.message);
+        setListings(SAMPLE_LISTINGS);
+        return;
+      }
+
+      setListings(data || SAMPLE_LISTINGS);
+    } catch (error) {
+      console.error("Error fetching listings, using sample data:", error);
+      setListings(SAMPLE_LISTINGS);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     fetchListings();
   }, []);
@@ -44,14 +66,18 @@ export default function HomePage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ sessionId }),
           });
-          // console.log({ response: response });
+          // //console.log({ response: response });
           // if (response.ok) {
           //   window.location.href = `${window.location.origin}`;
           // }
 
           const resp = await response.json();
 
-          console.log("Response from success route:", resp);
+          if (resp.message) {
+            alert(resp.message);
+          }
+
+          //console.log("Response from success route:", resp);
         } catch (error) {
           console.error("Error processing session_id:", error);
         }
@@ -60,29 +86,6 @@ export default function HomePage() {
 
     fetch_();
   }, [searchParams]);
-
-  const fetchListings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("listings")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        // If there's an error (like table doesn't exist), use sample data
-        console.log("Using sample data:", error.message);
-        setListings(SAMPLE_LISTINGS);
-        return;
-      }
-
-      setListings(data || SAMPLE_LISTINGS);
-    } catch (error) {
-      console.error("Error fetching listings, using sample data:", error);
-      setListings(SAMPLE_LISTINGS);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (

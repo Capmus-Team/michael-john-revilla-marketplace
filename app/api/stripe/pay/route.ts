@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       quantity: 1,
       price_data: {
         currency: "eur",
-        unit_amount: Math.round(post.price * 100), // Ensure integer
+        unit_amount: Math.round(post.price * 0.86 * 100), // Ensure integer
         product_data: {
           name: post?.title,
           description: post?.description,
