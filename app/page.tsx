@@ -8,6 +8,7 @@ import type { Listing } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { DatabaseSetup } from "@/components/database-setup";
 import { SAMPLE_LISTINGS } from "@/lib/sample-data";
+import { AuthContextProvider } from "@/components/contexts/auth-context";
 
 export default function HomePage() {
   const [listings, setListings] = useState<Listing[]>([]);

@@ -1,11 +1,15 @@
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, User, Bell, Mail, Search, List } from "lucide-react";
 
-import { useAuth } from "./contexts/auth-context";
+import { AuthContextProvider, UserAuth } from "./contexts/auth-context";
+import { useRouter } from "next/navigation";
 
 export function Header() {
-  const { user, isLoading, signIn, signOut } = useAuth();
+  const { user, signOut } = UserAuth();
+
+  const router = useRouter();
 
   return (
     <header className="border-b bg-white">
@@ -52,28 +56,33 @@ export function Header() {
                 <List className="h-5 w-5" />
               </Link>
             </Button>
-            <Button variant="ghost" size="icon">
-              <Mail className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-            </Button>
+
             {user ? (
-              <Button asChild>
-                <Link href="/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Listing
-                </Link>
-              </Button>
+              <>
+                <Button variant="ghost" size="icon">
+                  <Mail className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Bell className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => router.replace("/profile")}
+                  size="icon"
+                >
+                  <User className="h-5 w-5" />
+                </Button>
+                <Button asChild>
+                  <Link href="/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Listing
+                  </Link>
+                </Button>
+                <Button onClick={signOut}>Logout</Button>
+              </>
             ) : (
               <Button asChild>
-                <Link href="/sign-in">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Sign In
-                </Link>
+                <Link href="/sign-in">Sign In</Link>
               </Button>
             )}
           </div>

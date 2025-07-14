@@ -1,42 +1,91 @@
-import { notFound } from "next/navigation";
+"use client"; // <-- Add this at the very top
+
+import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Header } from "@/components/header";
 import { MessageForm } from "@/components/message-form";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabaseClient";
 import type { Listing } from "@/lib/types";
 import { SAMPLE_LISTINGS } from "@/lib/sample-data";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { UserAuth } from "@/components/contexts/auth-context";
+import { getStripeAccount } from "@/lib/supabaseClient";
 
-interface ListingPageProps {
-  params: Promise<{ id: string }>;
-}
+export default function ListingPage({ params }: { params: { id: string } }) {
+  const { user } = UserAuth(); // Now using the auth context
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-async function getListing(id: string): Promise<Listing | null> {
-  try {
-    const { data, error } = await supabase
-      .from("listings")
-      .select("*")
-      .eq("id", id)
-      .single();
+  //const [userSeller, setUserSeller] = useState({});
 
-    if (error) {
-      // If database error, try to find in sample data
-      const sampleListing = SAMPLE_LISTINGS.find(
-        (listing) => listing.id === id
-      );
-      return sampleListing || null;
+  const [sellerStripeAccount, setSellerStripeAccount] = useState<any>({});
+
+  const fetchUserSeller = async () => {};
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("listings")
+          .select("*")
+          .eq("id", params.id)
+          .single();
+
+        if (error || !data) {
+          const sampleListing = SAMPLE_LISTINGS.find((l) => l.id === params.id);
+          if (!sampleListing) {
+            notFound();
+          }
+          setListing(sampleListing);
+        } else {
+          setListing(data);
+        }
+
+        const { data: sellerStripe, error: errorSeller } = await supabase
+          .from("stripe_account")
+          .select("*")
+          .eq("user_id", data?.user_id)
+          .single();
+
+        //console.log("data:", data, sellerStripe);
+        setSellerStripeAccount(sellerStripe);
+      } catch (error) {
+        const sampleListing = SAMPLE_LISTINGS.find((l) => l.id === params.id);
+        setListing(sampleListing || null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListing();
+  }, [params.id]);
+
+  useEffect(() => {
+    if (sellerStripeAccount) {
+      console.log("sellerStripeAccount fetched:", sellerStripeAccount);
     }
+  }, [sellerStripeAccount]);
 
-    return data;
-  } catch (error) {
-    // Fallback to sample data
-    const sampleListing = SAMPLE_LISTINGS.find((listing) => listing.id === id);
-    return sampleListing || null;
+  // useEffect(() => {
+  //   const getStripeAcc = async () => {
+  //     const acc = await getStripeAccount(listing?.user_id || "");
+  //     return acc;
+  //   };
+
+  //   setUserSeller(getStripeAcc());
+  // }, [listing]);
+
+  // useEffect(() => {
+  //   if (userSeller) {
+  //     console.log("User Seller:", userSeller.json());
+  //   }
+  // }, [userSeller]);
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
-}
-
-export default async function ListingPage({ params }: ListingPageProps) {
-  const { id } = await params;
-  const listing = await getListing(id);
 
   if (!listing) {
     notFound();
@@ -50,6 +99,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg p-6">
           <div className="grid md:grid-cols-2 gap-8">
+            {/* Image section remains the same */}
             <div className="aspect-square relative">
               <Image
                 src={
@@ -62,6 +112,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
             </div>
 
             <div className="space-y-6">
+              {/* Title and price section */}
               <div>
                 <h1 className="text-3xl font-bold mb-2">{listing.title}</h1>
                 <p className="text-4xl font-bold text-green-600 mb-4">
@@ -72,6 +123,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </p>
               </div>
 
+              {/* Description section */}
               {listing.description && (
                 <div>
                   <h3 className="font-semibold mb-2">Description</h3>
@@ -79,12 +131,31 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </div>
               )}
 
+              {/* Seller information */}
               <div>
                 <h3 className="font-semibold mb-2">Seller Information</h3>
                 <p className="text-gray-700">
-                  {listing.seller_name || "Anonymous Seller"}
+                  <div>Name: {listing.seller_name || "Anonymous Seller"}</div>
+                  {/* <div>Email: {listing.seller_name || "Anonymous Seller"}</div> */}
                 </p>
               </div>
+
+              {/* Buy button - only show if not the owner */}
+              {sellerStripeAccount?.stripe_onboarding_complete &&
+                sellerStripeAccount?.user_id !== user?.id && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button type="button" className="w-full">
+                      Buy ${listing.price.toLocaleString()}
+                    </Button>
+                  </div>
+                )}
+
+              {!sellerStripeAccount?.stripe_onboarding_complete &&
+                listing.user_id !== user?.id && (
+                  <div className="text-red-600">
+                    Seller has no stripe account active yet
+                  </div>
+                )}
 
               <MessageForm
                 listingId={listing.id}

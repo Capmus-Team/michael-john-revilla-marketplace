@@ -1,31 +1,43 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Header } from "@/components/header"
-import { CreateListingForm } from "@/components/create-listing-form"
-
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/header";
+import { CreateListingForm } from "@/components/create-listing-form";
+import PrivateRoute from "@/components/RouteController";
 export default function CreateListingPage() {
-  const [step, setStep] = useState<"type" | "form">("form") // Skip type selection for now
-  const [listingType, setListingType] = useState<string>("item")
-  const router = useRouter()
+  const [step, setStep] = useState<"type" | "form">("form"); // Skip type selection for now
+  const [listingType, setListingType] = useState<string>("item");
+  const router = useRouter();
 
   const listingTypes = [
     { id: "item", label: "Item for sale", description: "Sell a single item" },
-    { id: "multiple", label: "Create multiple listings", description: "Create multiple listings at once" },
-    { id: "vehicle", label: "Vehicle for sale", description: "Sell a car, truck, or motorcycle" },
-    { id: "home", label: "Home for sale or rent", description: "List property for sale or rent" },
-  ]
+    {
+      id: "multiple",
+      label: "Create multiple listings",
+      description: "Create multiple listings at once",
+    },
+    {
+      id: "vehicle",
+      label: "Vehicle for sale",
+      description: "Sell a car, truck, or motorcycle",
+    },
+    {
+      id: "home",
+      label: "Home for sale or rent",
+      description: "List property for sale or rent",
+    },
+  ];
 
   if (step === "form") {
     return (
       <div className="min-h-screen bg-gray-100">
         <Header />
         <div className="container mx-auto px-4 py-8">
-          <CreateListingForm onSuccess={() => router.push("/my-listings")} />
+          <CreateListingForm onSuccess={() => router.replace("/my-listings")} />
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -61,8 +73,8 @@ export default function CreateListingPage() {
                 <button
                   key={type.id}
                   onClick={() => {
-                    setListingType(type.id)
-                    setStep("form")
+                    setListingType(type.id);
+                    setStep("form");
                   }}
                   className="p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-center"
                 >
@@ -76,5 +88,5 @@ export default function CreateListingPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

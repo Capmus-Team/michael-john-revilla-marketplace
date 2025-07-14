@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,37 +11,64 @@ import Link from "next/link";
 import type { Listing } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { SAMPLE_LISTINGS } from "@/lib/sample-data";
+import { UserAuth } from "@/components/contexts/auth-context";
+import { List } from "postcss/lib/list";
 
 export default function MyListingsPage() {
-  const [listings, setListings] = useState<Listing[]>([]);
+  const [listings, setListings] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
 
-  useEffect(() => {
-    // In a real app, you'd get this from authentication
-    const email =
-      localStorage.getItem("userEmail") || "michaeljohnrevilla1233@gmail.com";
-    setUserEmail(email);
-    fetchUserListings(email);
-  }, []);
+  const { user } = UserAuth();
 
-  const fetchUserListings = async (email: string) => {
+  // useEffect(() => {
+  //   // In a real app, you'd get this from authentication
+  //   // const email =
+  //   //   localStorage.getItem("userEmail") || "michaeljohnrevilla1233@gmail.com";
+  //   // setUserEmail(email);
+  //   // fetchUserListings(email);
+
+  // }, []);
+
+  // const listings = useMemo(async () => {
+  //   setLoading(true);
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from("listings")
+  //       .select("*")
+  //       .eq("user_id", user.id)
+  //       .order("created_at", { ascending: false });
+
+  //     return data || [];
+  //   } catch (err) {
+  //     console.error(err);
+  //     return [];
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [user]);
+
+  // useEffect(() => {
+  //   setListings(listings_);
+  // }, [listings_]);
+
+  const fetchUserListings = async () => {
     try {
       const { data, error } = await supabase
         .from("listings")
         .select("*")
-        .eq("seller_email", email)
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        // Fallback to sample data filtered by user
-        const userListings = SAMPLE_LISTINGS.filter(
-          (listing) => listing.seller_email === email
-        );
-        setListings(userListings);
-        return;
-      }
+      // if (error) {
+      //   // Fallback to sample data filtered by user
+      //   const userListings = SAMPLE_LISTINGS.filter(
+      //     (listing) => listing.seller_email === email
+      //   );
+      //   setListings(userListings);
+      //   return;
+      // }
 
       setListings(data || []);
     } catch (error) {
@@ -50,32 +77,38 @@ export default function MyListingsPage() {
       const userListings = SAMPLE_LISTINGS.filter(
         (listing) => listing.seller_email === userEmail
       );
-      setListings(userListings);
+      setListings([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteListing = async (listingId: string) => {
-    if (!confirm("Are you sure you want to delete this listing?")) return;
+  useEffect(() => {
+    fetchUserListings();
+  }, []);
 
-    try {
-      const { error } = await supabase
-        .from("listings")
-        .delete()
-        .eq("id", listingId);
+  // const handleDeleteListing = async (listingId: string) => {
+  //   if (!confirm("Are you sure you want to delete this listing?")) return;
 
-      if (error) throw error;
+  //   try {
+  //     const { error } = await supabase
+  //       .from("listings")
+  //       .delete()
+  //       .eq("id", listingId);
 
-      setListings(listings.filter((listing) => listing.id !== listingId));
-    } catch (error) {
-      console.error("Error deleting listing:", error);
-      alert("Failed to delete listing. Please try again.");
-    }
-  };
+  //     if (error) throw error;
+
+  //     setListings(
+  //       listings.filter((listing: Listing) => listing.id !== listingId)
+  //     );
+  //   } catch (error) {
+  //     console.error("Error deleting listing:", error);
+  //     alert("Failed to delete listing. Please try again.");
+  //   }
+  // };
 
   const filteredListings = listings.filter(
-    (listing) =>
+    (listing: Listing) =>
       listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       listing.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -153,7 +186,10 @@ export default function MyListingsPage() {
                 <div className="text-2xl font-bold">
                   $
                   {listings
-                    .reduce((sum, listing) => sum + listing.price, 0)
+                    .reduce(
+                      (sum: number, listing: Listing) => sum + listing.price,
+                      0
+                    )
                     .toLocaleString()}
                 </div>
               </CardContent>
@@ -182,7 +218,7 @@ export default function MyListingsPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {filteredListings.map((listing) => (
+            {filteredListings.map((listing: Listing) => (
               <Card key={listing.id} className="p-6">
                 <div className="flex gap-6">
                   <div className="w-32 h-32 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
@@ -226,7 +262,7 @@ export default function MyListingsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteListing(listing.id)}
+                          // onClick={() => handleDeleteListing(listing.id)}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />

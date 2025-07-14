@@ -2,21 +2,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/contexts/auth-context";
+import { UserAuth } from "@/components/contexts/auth-context";
 import { useEffect } from "react";
 
 export function withAuth(Component: React.ComponentType) {
   return function ProtectedRoute(props: any) {
-    const { user, isLoading } = useAuth();
+    const { user, AuthLoading } = UserAuth();
     const router = useRouter();
 
     useEffect(() => {
-      if (!isLoading && !user) {
+      if (!AuthLoading && !user) {
         router.push("/login");
       }
-    }, [isLoading, user, router]);
+    }, [AuthLoading, user, router]);
 
-    if (isLoading || !user) {
+    if (AuthLoading || !user) {
       return <div>Loading...</div>; // Or a loading spinner
     }
 
