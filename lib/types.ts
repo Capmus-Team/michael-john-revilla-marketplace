@@ -61,3 +61,32 @@ export const CATEGORIES = [
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
+
+export type Post = {
+  id: number;
+  title: string;
+  description: string | null;
+  price: number;
+  image_url: string[] | null;
+  university_email_domain: string | null;
+  user_id: string;
+  created_at: string;
+  category_id: number;
+  videos: string[] | null;
+  video_type: string | null;
+  thumbnail: string | null;
+  email: string | null;
+  ip: string | null;
+  subcategory_id: number | null;
+  access_token: string | null;
+  status: string | null;
+  university_id: number | null;
+  time_posted: string;
+  time_modified: string;
+  linkedin_url: string | null;
+  source: string | null;
+  university: string | null;
+  university_email: string | null;
+  category?: Category | null;
+  subcategory?: { id: number; name: string } | null;
+};

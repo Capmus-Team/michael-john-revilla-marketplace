@@ -8,7 +8,11 @@ import type { Listing } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { DatabaseSetup } from "@/components/database-setup";
 import { SAMPLE_LISTINGS } from "@/lib/sample-data";
-import { AuthContextProvider } from "@/components/contexts/auth-context";
+import {
+  AuthContextProvider,
+  UserAuth,
+} from "@/components/contexts/auth-context";
+import { useSearchParams } from "next/navigation";
 
 export default function HomePage() {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -16,9 +20,46 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [showSetup, setShowSetup] = useState(false);
 
+  const { user } = UserAuth();
+
   useEffect(() => {
     fetchListings();
   }, []);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const fetch_ = async () => {
+      if (searchParams?.get("session_id")) {
+        // check if session_id exists
+        if (!user) {
+          // check if authenticated
+          return;
+        }
+        const sessionId = searchParams?.get("session_id");
+
+        try {
+          const response = await fetch("/api/stripe/pay/success", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId }),
+          });
+          // console.log({ response: response });
+          // if (response.ok) {
+          //   window.location.href = `${window.location.origin}`;
+          // }
+
+          const resp = await response.json();
+
+          console.log("Response from success route:", resp);
+        } catch (error) {
+          console.error("Error processing session_id:", error);
+        }
+      }
+    };
+
+    fetch_();
+  }, [searchParams]);
 
   const fetchListings = async () => {
     try {

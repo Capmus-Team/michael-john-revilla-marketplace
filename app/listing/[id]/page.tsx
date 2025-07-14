@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { UserAuth } from "@/components/contexts/auth-context";
 import { getStripeAccount } from "@/lib/supabaseClient";
+import { stripe } from "@/lib/stripeClient";
+import { loadStripe } from "@stripe/stripe-js";
 
 export default function ListingPage({ params }: { params: { id: string } }) {
   const { user } = UserAuth(); // Now using the auth context
@@ -67,6 +69,46 @@ export default function ListingPage({ params }: { params: { id: string } }) {
       console.log("sellerStripeAccount fetched:", sellerStripeAccount);
     }
   }, [sellerStripeAccount]);
+
+  const handleBuyClick = async () => {
+    // alert("Buy button clicked!");
+    // console.log("Listing:", listing);
+    // return;
+    const response = await fetch("/api/stripe/pay", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        listingId: listing?.id,
+        amount: listing?.price,
+        sellerId: listing?.user_id,
+        products: [listing], // should be []
+        seller_stripe_acc_id: sellerStripeAccount?.stripe_account_id,
+        // buyer_stripe_acc_id
+        success_url: `${window.location.origin}/?session_id={CHECKOUT_SESSION_ID}&checkout=success`,
+        cancel_url: `${window.location.origin}/?checkout=false`,
+      }),
+    });
+
+    // const datax = await response.json();
+    // console.log("response:", datax);
+    // return;
+    const stripe = await loadStripe(
+      process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
+    );
+
+    const data = await response.json();
+    // console.log("RESPONSE!!:", stripe?.accou);
+
+    const result: any = await stripe?.redirectToCheckout({
+      sessionId: data.session,
+    });
+
+    if (result.error) {
+      window.alert(result?.error?.message);
+    }
+  };
 
   // useEffect(() => {
   //   const getStripeAcc = async () => {
@@ -144,7 +186,11 @@ export default function ListingPage({ params }: { params: { id: string } }) {
               {sellerStripeAccount?.stripe_onboarding_complete &&
                 sellerStripeAccount?.user_id !== user?.id && (
                   <div className="grid grid-cols-2 gap-4">
-                    <Button type="button" className="w-full">
+                    <Button
+                      onClick={handleBuyClick}
+                      type="button"
+                      className="w-full"
+                    >
                       Buy ${listing.price.toLocaleString()}
                     </Button>
                   </div>
