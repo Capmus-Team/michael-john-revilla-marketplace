@@ -9,6 +9,7 @@ import { UserAuth } from "@/components/contexts/auth-context";
 import {
   getStripeAccount,
   getStripeDashboardLink,
+  retrieveStripeAccount,
   updateStripeAccount,
 } from "@/lib/supabaseClient";
 import { set } from "date-fns";
@@ -68,8 +69,17 @@ export default function ProfilePage() {
     fetchStripeAccount();
   }, [user]);
 
+  const [stripe_acc, setStripe_Acc]: any = useState({});
   useEffect(() => {
-    //console.log("Stripe Account:", stripe_account);
+    const retStripe = async () => {
+      const stripe_ = await retrieveStripeAccount(
+        stripe_account?.stripe_account_id ?? ""
+      );
+      setStripe_Acc(stripe_ ?? {});
+      //return stripe_;
+    };
+    retStripe();
+    // console.log("Stripe Account:", stripe_account);
   }, [stripe_account]);
 
   const [formData, setFormData] = useState({});
@@ -195,6 +205,25 @@ export default function ProfilePage() {
                   ? "Active"
                   : stripe_account.stripe_account_status || "Pending"}
               </span>
+            </p>
+            <p className=" text-sm mt-1">
+              Capabilities {"->"}
+              <div className=" mt-1">
+                Card Payments:{" "}
+                {stripe_acc?.capabilities?.card_payments == "active" ? (
+                  <span className="text-sm text-green-600">Active</span>
+                ) : (
+                  <span className="text-sm text-red-600">Inactive</span>
+                )}
+              </div>
+              <div className=" mt-1">
+                Transfers:{" "}
+                {stripe_acc?.capabilities?.transfers == "active" ? (
+                  <span className="text-sm text-green-600">Active</span>
+                ) : (
+                  <span className="text-sm text-red-600">Inactive</span>
+                )}
+              </div>
             </p>
             <Button
               type="button"
