@@ -234,3 +234,51 @@ export async function SelectFromDBsingle(
   //   initial.single()
   // }
 }
+type ProfileData = {
+  user_id?: string;
+  email?: string;
+  // Add other profile fields here
+};
+export async function upsertProfile(
+  upsertData: ProfileData
+): Promise<{ data: any; error: Error | null }> {
+  try {
+    //const { ...stripeInserts } = upsertData;
+    const { data, error } = await supabase
+      .from("profiles")
+      .upsert(upsertData, { onConflict: "user_id" })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error upserting profile:", error);
+      throw error;
+    }
+
+    return { data, error };
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+}
+
+export async function getProfile(user_id: string) {
+  try {
+    //const { ...stripeInserts } = upsertData;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", user_id)
+      .single();
+
+    if (error) {
+      console.error("Error selecting profile:", error);
+      throw error;
+    }
+
+    return { data, error };
+  } catch (err) {
+    console.error("error:", err);
+    throw err;
+  }
+}

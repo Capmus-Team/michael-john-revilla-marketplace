@@ -1,7 +1,7 @@
 "use client";
 // "use server"
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, upsertProfile } from "@/lib/supabaseClient";
 
 const AuthContext = createContext();
 
@@ -126,6 +126,24 @@ export const AuthContextProvider = ({ children }) => {
     if (error) {
       console.error("Error signing up: ", error);
       return { success: false, error };
+    }
+
+    // const {data:profileData, error: profileError} = await supabase
+    // .from('profiles')
+
+    // await upsertProfile({
+    //   user_id: data?.user?.id,
+    //   email: data?.user?.email,
+    // });
+
+    // 2. Create profile
+    const { data: profileData, error: profileError } = await upsertProfile({
+      user_id: data.user.id,
+      email: data.user.email,
+    });
+
+    if (profileError) {
+      return { success: false, profileData };
     }
 
     setUser(data.user);

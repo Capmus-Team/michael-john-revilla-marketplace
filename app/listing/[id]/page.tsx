@@ -4,7 +4,7 @@ import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Header } from "@/components/header";
 import { MessageForm } from "@/components/message-form";
-import { getUser, supabase } from "@/lib/supabaseClient";
+import { getProfile, getUser, supabase } from "@/lib/supabaseClient";
 import type { Listing } from "@/lib/types";
 import { SAMPLE_LISTINGS } from "@/lib/sample-data";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,20 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   const [sellerStripeAccount, setSellerStripeAccount] = useState<any>({});
 
   const fetchUserSeller = async () => {};
+
+  const [sellerProfile, setSellerProfile] = useState<any>({});
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const profile = await getProfile(listing?.user_id ?? "");
+      // return profile.data;
+      setSellerProfile(profile.data);
+    };
+    fetchProfile();
+    // const { email }: any = fetchProfile();
+    // console.log(email, "email");
+    // setSellerProfile(fetchProfile());
+  }, [listing]);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -211,6 +225,7 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                 <h3 className="font-semibold mb-2">Seller Information</h3>
                 <p className="text-gray-700">
                   <div>Name: {listing.seller_name || "Anonymous Seller"}</div>
+                  <div>Email: {sellerProfile?.email || "Anonymous Seller"}</div>
                   {/* <div>Email: {listing.seller_name || "Anonymous Seller"}</div> */}
                 </p>
               </div>
@@ -239,7 +254,10 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                   </div>
                 )}
               {sellerStripeAccount?.user_id !== user?.id && (
-                <MessageForm listingId={listing.id} sellerEmail={""} />
+                <MessageForm
+                  listingId={listing.id}
+                  sellerEmail={sellerProfile?.email}
+                />
               )}
             </div>
           </div>
