@@ -10,6 +10,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   db: { schema: "listings" },
 });
 
+export const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+  db: { schema: "auth" },
+});
+
 export const getStripeAccount = async (userId: string) => {
   const { data, error } = await supabase
     .from("stripe_account")
@@ -173,7 +177,7 @@ export async function getStripeDashboardLink(accountId: string) {
 
 export async function getUser(userID: string) {
   try {
-    const user = await supabase
+    const user = await supabaseAuth
       .from("users")
       .select("*")
       .eq("id", userID)
@@ -217,4 +221,16 @@ export async function StoreCheckoutSession(
   }
 
   return data;
+}
+
+export async function SelectFromDBsingle(
+  table: string,
+  selectTable: "*",
+  condition: { column: string | null; value: any | null }
+) {
+  const initial = await supabase.from(table).select(selectTable);
+
+  // if(condition.column){
+  //   initial.single()
+  // }
 }

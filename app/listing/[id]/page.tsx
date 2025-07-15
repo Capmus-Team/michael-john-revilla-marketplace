@@ -4,7 +4,7 @@ import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Header } from "@/components/header";
 import { MessageForm } from "@/components/message-form";
-import { supabase } from "@/lib/supabaseClient";
+import { getUser, supabase } from "@/lib/supabaseClient";
 import type { Listing } from "@/lib/types";
 import { SAMPLE_LISTINGS } from "@/lib/sample-data";
 import { Button } from "@/components/ui/button";
@@ -108,15 +108,22 @@ export default function ListingPage({ params }: { params: { id: string } }) {
       );
 
       const data = await response.json();
-      // //console.log("RESPONSE!!:", stripe?.accou);
+
+      const { inactive } = data;
+
+      if (inactive) {
+        alert(
+          "Seller stripe account should be enabled, in order to buy their products."
+        );
+      }
 
       const result: any = await stripe?.redirectToCheckout({
         sessionId: data.session,
       });
 
-      if (result.error) {
-        window.alert(result?.error?.message);
-      }
+      // if (result.error) {
+      //   window.alert(result?.error?.message);
+      // }
     } catch (error) {
       console.error("Error during purchase:", error);
     } finally {
@@ -148,6 +155,18 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   }
 
   const timeAgo = new Date(listing.created_at).toLocaleDateString();
+
+  // const [sellerUser, setSellerUser] = useState();
+
+  // const [sellerEmail, setSellerEmail] = useState("");
+
+  // useEffect(() => {
+  //   const getSellerEmail = async () => {
+  //     const { email }: any = await getUser(listing?.user_id);
+  //     setSellerEmail(email);
+  //   };
+  //   getSellerEmail();
+  // }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -220,10 +239,7 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                   </div>
                 )}
               {sellerStripeAccount?.user_id !== user?.id && (
-                <MessageForm
-                  listingId={listing.id}
-                  sellerEmail={listing.seller_email}
-                />
+                <MessageForm listingId={listing.id} sellerEmail={""} />
               )}
             </div>
           </div>

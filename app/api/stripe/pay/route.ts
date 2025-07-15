@@ -1,4 +1,5 @@
 import { stripe } from "@/lib/stripeClient";
+import { retrieveStripeAccount } from "@/lib/supabaseClient";
 import { Post } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -36,8 +37,8 @@ export async function POST(request: Request) {
         currency: "eur",
         unit_amount: Math.round(post.price * 0.86 * 100), // Ensure integer
         product_data: {
-          name: post?.title,
-          description: post?.description,
+          name: post?.title ?? "",
+          description: post?.description ?? "",
           images: [post?.image_url ?? ""], //should be an array
         },
       },
@@ -52,6 +53,15 @@ export async function POST(request: Request) {
       throw new Error("Seller has no stripe_account");
     }
 
+    const strxx = await retrieveStripeAccount(seller_stripe_acc_id);
+
+    if (strxx?.capabilities?.transfers == "inactive") {
+      return NextResponse.json({
+        inactive: true,
+      });
+    }
+
+    // return NextResponse.json({ seller_stripe_acc_id: seller_stripe_acc_id });
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineitems,

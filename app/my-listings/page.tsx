@@ -13,12 +13,14 @@ import { supabase } from "@/lib/supabase";
 import { SAMPLE_LISTINGS } from "@/lib/sample-data";
 import { UserAuth } from "@/components/contexts/auth-context";
 import { List } from "postcss/lib/list";
+import EditPage from "./edit/[id]/page";
 
 export default function MyListingsPage() {
   const [listings, setListings] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const { user } = UserAuth();
 
@@ -254,7 +256,11 @@ export default function MyListingsPage() {
                         )}
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsOpen(true)}
+                        >
                           <Link href={`/listing/${listing.id}`}>
                             <Edit className="h-4 w-4" />
                           </Link>
@@ -276,6 +282,7 @@ export default function MyListingsPage() {
           </div>
         )}
       </div>
+      {/* <EditPage params={{ id: "1" }} isOpen={!isOpen} /> */}
     </div>
   );
 }
